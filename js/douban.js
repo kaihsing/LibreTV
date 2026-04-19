@@ -532,16 +532,16 @@ function renderDoubanCards(data, container) {
             // 1. 直接使用豆瓣图片URL (作为备选)
             const originalCoverUrl = item.cover;
             
-            // 2. 准备稳定代理：使用 WordPress 的图片镜像或 weserv.nl
+            // 2. 准备稳定代理：使用 wsrv.nl (目前最稳定的豆瓣图片代理方案)
+            const wsrvProxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalCoverUrl)}&default=https://via.placeholder.com/300x450?text=No+Image`;
             const wpProxyUrl = `https://i0.wp.com/${originalCoverUrl.replace('https://', '').replace('http://', '')}`;
-            const weservProxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(originalCoverUrl)}`;
             
             // 为不同设备优化卡片布局
             card.innerHTML = `
                 <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                    <img src="${wpProxyUrl}" alt="${safeTitle}" 
+                    <img src="${wsrvProxyUrl}" alt="${safeTitle}" 
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        onerror="this.onerror=null; this.src='${weservProxyUrl}'; this.classList.add('object-contain');"
+                        onerror="this.onerror=null; this.src='${wpProxyUrl}';"
                         loading="lazy" referrerpolicy="no-referrer">
                     <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
                     <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm">
