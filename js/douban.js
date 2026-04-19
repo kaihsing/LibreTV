@@ -528,24 +528,27 @@ function renderDoubanCards(data, container) {
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
             
-            // 处理图片URL
-            // 1. 直接使用豆瓣图片URL (作为备选)
+            // 處理圖片URL
             const originalCoverUrl = item.cover;
             
-            // 2. 准备稳定代理：使用百度图片代理 (对豆瓣图片极其稳定)
-            const baiduProxyUrl = `https://image.baidu.com/search/down?url=${encodeURIComponent(originalCoverUrl)}`;
-            // 备用代理：wsrv.nl
-            const wsrvProxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalCoverUrl)}`;
+            // 核心修復：圖片代理也需要帶上身份驗證參數，否則會被 Cloudflare 拒絕
+            // 我們先生成一個基礎的代理 URL
+            const baseProxyUrl = PROXY_URL + encodeURIComponent(originalCoverUrl);
             
-            // 使用 Base64 灰色占位图，避免外部占位图服务失效导致的连接错误
-            const grayPlaceholder = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8+R8AAnkB9V97mQAAAABJRU5ErkJggg==";
+            // 這裡我們需要同步獲取當前的驗證 Hash
+            const authHash = localStorage.getItem('proxyAuthHash') || window.__ENV__?.PASSWORD || "";
+            const timestamp = Date.now();
+            const authenticatedProxyUrl = `${baseProxyUrl}${baseProxyUrl.includes('?') ? '&' : '?'}auth=${encodeURIComponent(authHash)}&t=${timestamp}`;
 
-            // 为不同设备优化卡片布局
+            // 備選方案：如果本地代理還是有問題，使用外部不需要驗證的強力代理
+            const wsrvProxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalCoverUrl)}`;
+
+            // 為不同設備優化卡片佈局
             card.innerHTML = `
                 <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                    <img src="${baiduProxyUrl}" alt="${safeTitle}" 
+                    <img src="${authenticatedProxyUrl}" alt="${safeTitle}" 
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        onerror="this.onerror=null; this.src='${wsrvProxyUrl}'; this.nextElementSibling.src='${grayPlaceholder}';"
+                        onerror="this.onerror=null; this.src='${wsrvProxyUrl}';"
                         loading="lazy" referrerpolicy="no-referrer">
                     <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
                     <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm">
