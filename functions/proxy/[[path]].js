@@ -79,11 +79,14 @@ export async function onRequest(context) {
         const timestamp = url.searchParams.get('t');
         
         // 获取服务器端密码
-        const serverPassword = env.PASSWORD;
+        let serverPassword = env.PASSWORD;
         if (!serverPassword) {
             console.error('服务器未设置 PASSWORD 环境变量，代理访问被拒绝');
             return false;
         }
+        
+        // 核心修復：自動刪除可能的換行符號或空格，保持與中間件一致
+        serverPassword = serverPassword.trim();
         
         // 使用 SHA-256 哈希算法（与其他平台保持一致）
         // 在 Cloudflare Workers 中使用 crypto.subtle
