@@ -531,24 +531,18 @@ function renderDoubanCards(data, container) {
             // 處理圖片URL
             const originalCoverUrl = item.cover;
             
-            // 核心修復：圖片代理也需要帶上身份驗證參數，否則會被 Cloudflare 拒絕
-            // 我們先生成一個基礎的代理 URL
-            const baseProxyUrl = PROXY_URL + encodeURIComponent(originalCoverUrl);
-            
-            // 這裡我們需要同步獲取當前的驗證 Hash
+            // 優先嘗試直接載入 (因為已經有 no-referrer)，失敗後才走代理
+            // 這裡我們同步獲取當前的驗證 Hash
             const authHash = localStorage.getItem('proxyAuthHash') || window.__ENV__?.PASSWORD || "";
             const timestamp = Date.now();
-            const authenticatedProxyUrl = `${baseProxyUrl}${baseProxyUrl.includes('?') ? '&' : '?'}auth=${encodeURIComponent(authHash)}&t=${timestamp}`;
-
-            // 備選方案：如果本地代理還是有問題，使用外部不需要驗證的強力代理
-            const wsrvProxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalCoverUrl)}`;
+            const authenticatedProxyUrl = `${PROXY_URL}${encodeURIComponent(originalCoverUrl)}?auth=${encodeURIComponent(authHash)}&t=${timestamp}`;
 
             // 為不同設備優化卡片佈局
             card.innerHTML = `
                 <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                    <img src="${authenticatedProxyUrl}" alt="${safeTitle}" 
+                    <img src="${originalCoverUrl}" alt="${safeTitle}" 
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        onerror="this.onerror=null; this.src='${wsrvProxyUrl}';"
+                        onerror="if(this.src !== '${authenticatedProxyUrl}') { this.onerror=null; this.src='${authenticatedProxyUrl}'; }"
                         loading="lazy" referrerpolicy="no-referrer">
                     <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
                     <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm">
