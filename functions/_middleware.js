@@ -14,8 +14,10 @@ export async function onRequest(context) {
     if (password) {
       passwordHash = await sha256(password);
     }
-    html = html.replace('window.__ENV__.PASSWORD = "{{PASSWORD}}";', 
-      `window.__ENV__.PASSWORD = "${passwordHash}";`);
+    
+    // 将 HTML 中的占位符替换为实际的密码哈希
+    html = html.replace('window.__ENV__.PASSWORD="***";', 
+      `window.__ENV__.PASSWORD="${passwordHash}";`);
     
     return new Response(html, {
       headers: response.headers,
