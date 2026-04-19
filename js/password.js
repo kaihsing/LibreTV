@@ -54,10 +54,6 @@ async function verifyPassword(password) {
         const inputPassword = password.trim();
         const inputHash = await sha256(inputPassword);
         
-        // 除錯日誌：這會幫助我們看到為什麼不匹配
-        console.log('[Password Debug] Expected:', correctHash.toLowerCase());
-        console.log('[Password Debug] Input   :', inputHash.toLowerCase());
-
         const isValid = (inputHash.toLowerCase() === correctHash.toLowerCase());
 
         if (isValid) {
