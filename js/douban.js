@@ -532,16 +532,20 @@ function renderDoubanCards(data, container) {
             // 1. 直接使用豆瓣图片URL (作为备选)
             const originalCoverUrl = item.cover;
             
-            // 2. 准备稳定代理：使用 wsrv.nl (目前最稳定的豆瓣图片代理方案)
-            const wsrvProxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalCoverUrl)}&default=https://via.placeholder.com/300x450?text=No+Image`;
-            const wpProxyUrl = `https://i0.wp.com/${originalCoverUrl.replace('https://', '').replace('http://', '')}`;
+            // 2. 准备稳定代理：使用百度图片代理 (对豆瓣图片极其稳定)
+            const baiduProxyUrl = `https://image.baidu.com/search/down?url=${encodeURIComponent(originalCoverUrl)}`;
+            // 备用代理：wsrv.nl
+            const wsrvProxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(originalCoverUrl)}`;
             
+            // 使用 Base64 灰色占位图，避免外部占位图服务失效导致的连接错误
+            const grayPlaceholder = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8+R8AAnkB9V97mQAAAABJRU5ErkJggg==";
+
             // 为不同设备优化卡片布局
             card.innerHTML = `
                 <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                    <img src="${wsrvProxyUrl}" alt="${safeTitle}" 
+                    <img src="${baiduProxyUrl}" alt="${safeTitle}" 
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        onerror="this.onerror=null; this.src='${wpProxyUrl}';"
+                        onerror="this.onerror=null; this.src='${wsrvProxyUrl}'; this.nextElementSibling.src='${grayPlaceholder}';"
                         loading="lazy" referrerpolicy="no-referrer">
                     <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
                     <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm">
