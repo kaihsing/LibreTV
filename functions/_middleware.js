@@ -1,5 +1,3 @@
-import { sha256 } from '../js/sha256.js';
-
 export async function onRequest(context) {
   const { request, env, next } = context;
   const response = await next();
@@ -11,12 +9,18 @@ export async function onRequest(context) {
     // 处理普通密码
     const password = env.PASSWORD || "";
     let passwordHash = "";
+    
     if (password) {
-      passwordHash = await sha256(password);
+      // 直接在中間件內實現 SHA-256，避免 import 失敗
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
     
-    // 将 HTML 中的占位符替换为实际的密码哈希
-    html = html.replace('window.__ENV__.PASSWORD="***";', 
+    // 使用更強大的正則表達式進行替換，處理可能存在的空格
+    // 匹配 window.__ENV__.PASSWORD = "***" 或 window.__ENV__.PASSWORD="***"
+    html = html.replace(/window\.__ENV__\.PASSWORD\s*=\s*["']\*\*\*["'];?/, 
       `window.__ENV__.PASSWORD="${passwordHash}";`);
     
     return new Response(html, {
