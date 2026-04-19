@@ -46,10 +46,18 @@ window.isPasswordRequired = isPasswordRequired;
 async function verifyPassword(password) {
     try {
         const correctHash = window.__ENV__?.PASSWORD;
-        if (!correctHash) return false;
+        if (!correctHash) {
+            console.error('[Password] No correctHash found in window.__ENV__');
+            return false;
+        }
 
-        // 統一轉為小寫進行比較，避免大小寫造成的錯誤
-        const inputHash = await sha256(password);
+        const inputPassword = password.trim();
+        const inputHash = await sha256(inputPassword);
+        
+        // 除錯日誌：這會幫助我們看到為什麼不匹配
+        console.log('[Password Debug] Expected:', correctHash.toLowerCase());
+        console.log('[Password Debug] Input   :', inputHash.toLowerCase());
+
         const isValid = (inputHash.toLowerCase() === correctHash.toLowerCase());
 
         if (isValid) {
