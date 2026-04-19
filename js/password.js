@@ -48,8 +48,9 @@ async function verifyPassword(password) {
         const correctHash = window.__ENV__?.PASSWORD;
         if (!correctHash) return false;
 
+        // 統一轉為小寫進行比較，避免大小寫造成的錯誤
         const inputHash = await sha256(password);
-        const isValid = inputHash === correctHash;
+        const isValid = (inputHash.toLowerCase() === correctHash.toLowerCase());
 
         if (isValid) {
             localStorage.setItem(PASSWORD_CONFIG.localStorageKey, JSON.stringify({
