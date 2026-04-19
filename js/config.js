@@ -205,7 +205,6 @@ const API_SITES = {
     name: '量子资源站'
 
   },
-    }
     //ARCHIVE https://telegra.ph/APIs-08-12
 };
 
@@ -251,7 +250,7 @@ const API_CONFIG = {
 };
 
 // 优化后的正则表达式模式
-const M3U8_PATTERN = /\$https?:\/\/[^"'\s]+?\.m3u8/g;
+const M3U8_PATTERN = /\$https?:\/\/[^"'\\s]+?\.m3u8/g;
 
 // 添加自定义播放器URL
 const CUSTOM_PLAYER_URL = 'player.html'; // 使用相对路径引用本地player.html
