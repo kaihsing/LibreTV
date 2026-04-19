@@ -7,10 +7,13 @@ export async function onRequest(context) {
     let html = await response.text();
     
     // 获取 Cloudflare 设置的 PASSWORD 环境变量
-    const password = env.PASSWORD || "";
+    let password = env.PASSWORD || "";
     let passwordToInject = "";
     
     if (password) {
+      // 核心修復：自動刪除可能的換行符號或空格
+      password = password.trim();
+      
       // 检查是否已经是 64 位哈希值
       const isHash = /^[a-fA-F0-9]{64}$/.test(password);
       
